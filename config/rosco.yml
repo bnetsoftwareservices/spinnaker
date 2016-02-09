@@ -3,7 +3,7 @@ server:
   address: ${services.rosco.host:localhost}
 
 redis:
-  host: ${services.redis.host:localhost}
+  connection: ${services.redis.connection:redis://localhost:6379}
 
 aws:
   enabled: ${providers.aws.enabled:false}
@@ -22,6 +22,9 @@ google:
     - name: ${providers.google.primaryCredentials.name}
       project: ${providers.google.primaryCredentials.project}
       jsonPath: ${providers.google.primaryCredentials.jsonPath}
+  gce:
+    bakeryDefaults:
+      zone: ${providers.google.defaultZone}
 
 rush:
   baseUrl: ${services.rush.baseUrl:localhost:8085}

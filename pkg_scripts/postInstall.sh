@@ -5,10 +5,14 @@
 chmod +x /opt/spinnaker/install/first_google_boot.sh
 
 # Deprecated. Will be removed in the future.
-ln -s /opt/spinnaker/bin /opt/spinnaker/scripts
+if [ `readlink -f /opt/spinnaker/scripts` != "/opt/spinnaker/bin" ]; then
+  ln -s /opt/spinnaker/bin /opt/spinnaker/scripts
+fi
 
-# Create master config
-cp /opt/spinnaker/config/default-spinnaker-local.yml /opt/spinnaker/config/spinnaker-local.yml
+if [ ! -f /opt/spinnaker/config/spinnaker-local.yml ]; then
+  # Create master config on original install, but leave in place on upgrades.
+  cp /opt/spinnaker/config/default-spinnaker-local.yml /opt/spinnaker/config/spinnaker-local.yml
+fi
 
 # deck settings
 /opt/spinnaker/bin/reconfigure_spinnaker.sh

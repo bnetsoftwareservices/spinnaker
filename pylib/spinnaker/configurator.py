@@ -26,7 +26,7 @@ class InstallationParameters(object):
 
   Attributes:
     USER_CONFIG_DIR: Path to directory containing installation configuration
-       files for the indivual subsystems.
+       files for the individual subsystems.
 
     LOG_DIR: Path to directory where individual log files are written.
 
@@ -35,10 +35,10 @@ class InstallationParameters(object):
 
     SPINNAKER_INSTALL_DIR: Path to the root spinnaker installation directory.
 
-    UTILITY_SCRIPT_DIR: Path to directory containing spinnaker maintainence
+    UTILITY_SCRIPT_DIR: Path to directory containing spinnaker maintenance
        and other utility scripts.
 
-    EXTERNAL_DEPENDENCY_SCRIPT_DIR: Path to directory containing maintainence
+    EXTERNAL_DEPENDENCY_SCRIPT_DIR: Path to directory containing maintenance
         and utility scripts for managing dependencies outside spinnaker itself.
 
     INSTALLED_CONFIG_DIR: Path to directory containing the master configuration
@@ -61,7 +61,7 @@ class InstallationParameters(object):
 
   INSTALLED_CONFIG_DIR = SPINNAKER_INSTALL_DIR + '/config'
 
-  DECK_INSTALL_DIR = '/var/www'
+  DECK_INSTALL_DIR = '/var/www/html'
   HACK_DECK_SETTINGS_FILENAME = 'settings.js'
   ENVIRONMENT_VARIABLE_PATH = '/etc/default/spinnaker'
 
@@ -113,7 +113,7 @@ class Configurator(object):
       if os.geteuid():
           # If we are not running as root and there is an installation on
           # this machine as well as a user/.spinnaker directory then it is
-          # ambiguous which we are validating. For saftey we'll force this
+          # ambiguous which we are validating. For safety we'll force this
           # to be the normal system installation. Warn that we are doing this.
           installed_bindings = yaml_util.load_bindings(
                installation_parameters.INSTALLED_CONFIG_DIR,
@@ -192,18 +192,24 @@ class Configurator(object):
     original_block = source[offset:end]
     # Remove all the explicit declarations in this block
     # Leaving us with just comments
-    block = re.sub('\n\s*let\s+\w+\s*=(.+)\n', '\n', original_block)
+    block = re.sub('\n\s*var\s+\w+\s*=(.+)\n', '\n', original_block)
     settings = [source[:offset]]
 
-    # Now iterate over the comments looking for let specifications
+    # Now iterate over the comments looking for var specifications
     offset = 0
-    for match in re.finditer('//\s*let\s+(\w+)\s*=\s*(.+?);?\n', block) or []:
+    for match in re.finditer('//\s*var\s+(\w+)\s*=\s*(.+?);?\n', block) or []:
       settings.append(block[offset:match.end()])
       offset = match.end()
       name = match.group(1)
       value = self.bindings.replace(match.group(2))
-      settings.append('let {name} = {value!r};\n'.format(
-         name=name, value=value))
+      if isinstance(value, bool):
+        # Convert to javascript bool value by lowercasing the string
+        settings.append('var {name} = {value};\n'.format(
+           name=name, value=str(value).lower()))
+      else:
+        # Quote strings, don't quote numbers.
+        settings.append('var {name} = {value!r};\n'.format(
+           name=name, value=value))
 
     settings.append(block[offset:])
     settings.append(source[end:])

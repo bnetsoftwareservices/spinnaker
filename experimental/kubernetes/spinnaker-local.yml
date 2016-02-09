@@ -1,49 +1,24 @@
-# This file is intended to override the default configuration in the spinnaker.yml file.
-# In order for Spinnaker to discover it, it must be copied to a file named
-# "spinnaker-local.yml" and placed in the $HOME/.spinnaker directory.
-
 providers:
   aws:
     # If you want to deploy some services to Amazon Web Services (AWS),
     # set enabled and provide primary credentials for deploying.
     # Enabling AWS is independent of other providers.
-    enabled: ${SPINNAKER_AWS_ENABLED:false}
-    defaultRegion: ${SPINNAKER_AWS_DEFAULT_REGION}
-    defaultIAMRole: BaseIAMRole
-    primaryCredentials:
-      name: my-aws-account
-      # Store actual credentials in /home/spinnaker/.aws/credentials
+    enabled: false
 
   google:
     # If you want to deploy some services to Google Cloud Platform (google),
     # set enabled and provide primary credentials for deploying.
     # Enabling google is independent of other providers.
-    enabled: ${SPINNAKER_GOOGLE_ENABLED:false}
-    defaultRegion: ${SPINNAKER_GOOGLE_DEFAULT_REGION}
-    defaultZone: ${SPINNAKER_GOOGLE_DEFAULT_ZONE}
+    enabled: true
+    defaultRegion: us-central1
+    defaultZone: us-central1-f
     primaryCredentials:
       name: my-google-account
       # The project is the Google Project ID for the project to manage with Spinnaker.
       # The jsonPath is a path to the JSON service credentials downloaded from the
       # Google Developer's Console.
-      project: ${SPINNAKER_GOOGLE_PROJECT_ID}
-      jsonPath: ${SPINNAKER_GOOGLE_PROJECT_CREDENTIALS_PATH:}
-
-  cf:
-    # If you want to deploy some services to Cloud Foundry (cf),
-    # set enabled and provide primary credentials for deploying.
-    # Enabling cf is independent of other providers.
-    enabled: false
-    defaultOrg: spinnaker-cf-org
-    defaultSpace: spinnaker-cf-space
-    primaryCredentials:
-      name: my-cf-account
-      api: my-cf-api-uri
-      console: my-cf-console-base-url
-    # Either uncomment and plugin credentials here, or supply as environment variables for maximum security
-    # account:
-    #   name: my-cf-username
-    #   password: my-cf-password
+      project: YOUR-GOOGLE-PROJECT
+      jsonPath: /root/.gce/gce.json
 
 services:
   default:
@@ -59,14 +34,14 @@ services:
     # If you are using a remote redis server, you can set the host here.
     # If the remote server is on a different port or url, you can add
     # a "port" or "baseUrl" field here instead.
-    host: localhost
+    host: redis
 
   cassandra:
     # If you are using a remote cassandra server, you can set the host here.
     # If the remote server is on a different port or url, you can add
     # a "port" or "baseUrl" field here instead. You may also need to set
     # the cluster name. See the main spinnaker.yml file for more attributes.
-    host: localhost
+    host: cassandra
 
   docker:
     # This target repository is used by the bakery to publish baked docker images.
@@ -94,19 +69,15 @@ services:
     # "igor" subsystem.
     enabled: false
 
-  deck:
-    # Frontend configuration.
-    timezone: 'America/Los_Angeles' # See: http://momentjs.com/timezone/docs/#/data-utilities/
-    auth:
-      enabled: false
-
   rush:
     # Spinnaker's "rush" subsystem is used by the "rosco" bakery.
     # You need to provide the fully-qualified path to the directory containing the packer templates.
     # They typically live in rosco's config/packer directory.
     configDir: /opt/rosco/config/packer
+    host: rush
 
   echo:
+    host: echo
     # allow pipeline triggers to run periodically via cron expressions
     cron:
       enabled: true
@@ -130,3 +101,15 @@ services:
       slack:
         enabled: false
         token: # the part after http://hooks.slack.com/services/
+
+  clouddriver:
+    host: clouddriver
+
+  orca:
+    host: orca
+
+  front50:
+    host: front50
+
+  rosco:
+    host: rosco

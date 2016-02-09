@@ -68,7 +68,7 @@ class Runner(object):
   # These are all the standard spinnaker subsystems that can be started
   # independent of one another.
   INDEPENDENT_SUBSYSTEM_LIST=['clouddriver', 'front50', 'orca', 'rosco',
-                              'echo']
+                              'echo', 'rush']
 
   # Denotes a process running on an external host
   EXTERNAL_PID = -123
@@ -147,7 +147,7 @@ class Runner(object):
     result = list(cls.INDEPENDENT_SUBSYSTEM_LIST)
 
     # These are additional, optional subsystems.
-    result.extend(['rush', 'igor'])
+    result.extend(['igor'])
 
     # Gate is started after everything else is up and available.
     result.append('gate')
@@ -163,8 +163,8 @@ class Runner(object):
     Args:
       path [string]: Path to the program to run.
       args [list of string]: Arguments to pass to program
-      detch [bool]: True if we're running it in separate process group.
-         A seprate process group will continue after we exit.
+      detach [bool]: True if we're running it in separate process group.
+         A separate process group will continue after we exit.
     """
     pid = os.fork()
     if pid == 0:
@@ -191,7 +191,7 @@ class Runner(object):
 
     Args:
       subsystem [string]: The name of the subsystem.
-      pid [int]: The process id of the runningn subsystem.
+      pid [int]: The process id of the running subsystem.
     """
     os.kill(pid, signal.SIGTERM)
 
@@ -307,22 +307,12 @@ class Runner(object):
         if pid:
           started_list.append((subsys, pid))
 
-    docker_address = self.__bindings.get('services.docker.targetRepository')
     jenkins_address = self.__bindings.get(
         'services.jenkins.defaultMaster.baseUrl')
     igor_enabled = self.__bindings.get('services.igor.enabled')
 
-    # Conditionally run rush only if docker is configured.
-    # A '$' indicates an unbound variable so it wasnt configured.
-    if docker_address and docker_address[0] != '$':
-      pid = self.maybe_start_job(jobs, 'rush')
-      if pid:
-         started_list.append(('rush', pid))
-    else:
-      print 'Not using rush because docker is not configured.'
-
     # Conditionally run igor only if jenkins is configured.
-    # A '$' indicates an unbound variable so it wasnt configured.
+    # A '$' indicates an unbound variable so it wasn't configured.
     have_jenkins = jenkins_address and jenkins_address[0] != '$'
     if igor_enabled != have_jenkins:
       if igor_enabled:
@@ -392,7 +382,7 @@ class Runner(object):
     Overrides for default ports only occur in ~/<subsystem>-local.yml
     or in ~/spinnaker-local.yml or in <install>/config/spinnnaker.yml
 
-    The actual runtime uses spring, which can be overriden for additional
+    The actual runtime uses spring, which can be overridden for additional
     search locations.
     """
     path = os.path.join(self.__installation.USER_CONFIG_DIR,
@@ -477,7 +467,7 @@ class Runner(object):
             wait_msg_retries -= 1
           elif not os.path.exists(log_path):
             print '{path} does not yet exist..'.format(path=log_path)
-            wait_msg_retries = 5  # dont display again for half a second.
+            wait_msg_retries = 5  # don't display again for half a second.
           else:
             tail_process = self.start_tail(log_path)
 
@@ -590,7 +580,7 @@ Proceeding anyway.
                 sys.stdout.flush()
             time.sleep(0.1)
           except OSError:
-            if count > 10:  # We didnt start logging until 10
+            if count > 10:  # We didn't start logging until 10
               sys.stdout.write('{pid} stopped.\n'.format(pid=pid))
               sys.stdout.flush()
             break

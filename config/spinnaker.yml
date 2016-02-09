@@ -1,3 +1,4 @@
+
 # This file is intended to serve as a master configuration for a Spinnaker deployment.
 # Customizations to the deployment should be made in another file named
 # "spinnaker-local.yml". The distribution has a prototype called
@@ -51,6 +52,11 @@ services:
       slack:
         enabled: false
         token: # the part after http://hooks.slack.com/services/
+
+  deck:
+    timezone: 'America/Los_Angeles'
+    auth:
+      enabled: false
 
   front50:
     host: ${services.default.host}
@@ -143,7 +149,6 @@ services:
     embedded: false
     cluster: CASS_SPINNAKER
 
-
 providers:
   aws:
     # If you want to deploy some services to Amazon Web Services (AWS),
@@ -176,3 +181,39 @@ providers:
       # downloaded from the Google Developer's Console.
       project:
       jsonPath:
+  cf:
+    # If you want to deploy some services to Cloud Foundry (cf),
+    # set enabled and provide primary credentials for deploying.
+    # Enabling cf is independent of other providers.
+    enabled: false
+    defaultOrg: spinnaker-cf-org
+    defaultSpace: spinnaker-cf-space
+    primaryCredentials:
+      name: my-cf-account
+      api: my-cf-api-uri
+      console: my-cf-console-base-url
+    # You must also supply cf.account.username and cf.account.password through env properties
+  azure:
+    # If you want to deploy some services to Microsoft Azure (azure),
+    # set enabled and provide primary credentials for deploying.
+    # Enabling azure is independent of other providers.
+    enabled: false
+    defaultRegion: West US
+    primaryCredentials:
+      name: my-azure-account
+  titan:
+    # If you want to deploy some services to titan,
+    # set enabled and provide primary credentials for deploying.
+    # Enabling titan is independent of other providers.
+    enabled: false
+    defaultRegion: us-east-1
+    primaryCredentials:
+      name: my-titan-account
+  kubernetes:
+    # If you want to deploy some services to kubernetes,
+    # set enabled and provide primary credentials for deploying.
+    # Enabling kubernetes is independent of other providers.
+    enabled: false
+    primaryCredentials:
+      name: my-kubernetes-account
+      namespace: default
